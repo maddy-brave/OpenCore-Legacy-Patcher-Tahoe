@@ -1,0 +1,53 @@
+Build-Version       : 3.0.0 - 2026-10-05
+Build-Type          : OpenCore Built for External Machine
+OpenCore-Version    : 1.0.5 - RELEASE
+Original-Model      : MacBookPro11,3
+
+Kernel:Add enabled kexts (BundlePath, MinKernel, MaxKernel):
+  Lilu.kext                                    min=8.0.0     max=-
+  RestrictEvents.kext                          min=12.0.0    max=-
+  CatalinaIntelI210Ethernet.kext               min=23.0.0    max=-
+  USB-Map.kext                                 min=22.0.0    max=24.99.99
+  USB-Map-Tahoe.kext                           min=25.0.0    max=-
+  CSLVFixup.kext                               min=20.0.0    max=20.99.99
+  AutoPkgInstaller.kext                        min=20.0.0    max=-
+  AppleUSBMultitouch.kext                      min=22.0.0    max=-
+  AppleUSBTopCase.kext                         min=22.0.0    max=-
+  AppleUSBTopCase.kext/Contents/PlugIns/AppleUSBTCButtons.kext min=22.0.0    max=-
+  AppleUSBTopCase.kext/Contents/PlugIns/AppleUSBTCKeyboard.kext min=22.0.0    max=-
+  AppleUSBTopCase.kext/Contents/PlugIns/AppleUSBTCKeyEventDriver.kext min=22.0.0    max=-
+  KDKlessWorkaround.kext                       min=22.3.0    max=-
+  RSRHelper.kext                               min=20.0.0    max=-
+  IOSkywalkFamily.kext                         min=23.0.0    max=-
+  IO80211FamilyLegacy.kext                     min=23.0.0    max=-
+  IO80211FamilyLegacy.kext/Contents/PlugIns/AirPortBrcmNIC.kext min=23.0.0    max=24.99.99
+  AirPortBrcmNIC-Tahoe.kext                    min=25.0.0    max=-
+  AirportBrcmFixup.kext                        min=12.0.0    max=-
+  IOS3XeFamily.kext                            min=23.0.0    max=-
+  AppleCameraInterface.kext                    min=23.0.0    max=-
+  AMFIPass.kext                                min=20.0.0    max=-
+  ECM-Override.kext                            min=23.0.0    max=-
+
+UEFI:Drivers enabled:
+  OpenRuntime.efi  args=''
+  OpenCanopy.efi  args=''
+  apfs_aligned.efi  args=''
+  OpenLinuxBoot.efi  args=''
+  ResetNvramEntry.efi  args=''
+UEFI:APFS EnableJumpstart: False
+ACPI:Add enabled: []
+
+boot-args          : keepsyms=1 debug=0x100 -lilubetaall ipc_control_port_options=0 -nokcmismatchpanic amfi=0x80
+csr-active-config  : 03080000
+OCLP-Version       : 3.0.0
+OCLP-Model         : MacBookPro11,3
+OCLP-Settings      :  -allow_fv -allow_amfi
+
+PlatformInfo Automatic: False  UpdateSMBIOS: False
+Generic SystemProductName: 
+SMBIOS BoardProduct : 
+DataHub BoardProduct: 
+
+Misc:Security SecureBootModel: Disabled  ScanPolicy: 0  Vault: Optional
+Misc:Boot PickerMode: External  ShowPicker: True  Timeout: 5
+Misc:BlessOverride: ['\\EFI\\Microsoft\\Boot\\bootmgfw.efi']
