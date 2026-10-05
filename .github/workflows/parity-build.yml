@@ -1,0 +1,140 @@
+name: Parity build (external-model EFI)
+
+# Builds the OpenCore EFI for one external Mac model on GitHub-hosted macOS runners,
+# hashes every output file, and publishes the manifest plus the text files of the
+# tree to an orphan results branch so they can be fetched with plain git.
+# Purpose: byte-level comparison against the same build made on a non-macOS host.
+
+on:
+  push:
+    branches:
+      - 'ci/**'
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Target Mac model identifier'
+        required: true
+        default: 'MacBookPro11,3'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.runner }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            python: '3.11'
+          - runner: macos-latest
+            python: '3.13'
+          - runner: macos-latest
+            python: '3.14'
+          - runner: macos-15-intel
+            python: '3.11'
+    env:
+      MODEL: ${{ inputs.model || 'MacBookPro11,3' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Name the result set
+        run: |
+          MODEL_SAFE="${MODEL//,/_}"
+          RES="results/${GITHUB_RUN_NUMBER}-${MODEL_SAFE}-${{ matrix.runner }}-py${{ matrix.python }}"
+          mkdir -p "$RES"
+          echo "MODEL_SAFE=$MODEL_SAFE" >> "$GITHUB_ENV"
+          echo "RES=$RES" >> "$GITHUB_ENV"
+
+      - name: Record host facts
+        run: |
+          {
+            echo "runner=${{ matrix.runner }}"
+            echo "run_id=${GITHUB_RUN_ID} run_number=${GITHUB_RUN_NUMBER} event=${GITHUB_EVENT_NAME}"
+            echo "model=${MODEL}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "describe=$(git describe --tags --always 2>/dev/null || true)"
+            sw_vers
+            uname -a
+            python3 --version
+            python3 -c 'import sys, platform; print(sys.version); print(platform.machine())'
+            echo "core.autocrlf=$(git config --get core.autocrlf || echo unset)"
+          } | tee "$RES/env.txt"
+
+      - name: Install runtime dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests pyobjc wxpython packaging py_sip_xnu py-applescript markdown2
+          python3 -m pip freeze | tee "$RES/pip-freeze.txt"
+
+      - name: Build the EFI
+        run: |
+          set -o pipefail
+          rm -rf Build-Folder
+          python3 OpenCore-Patcher-GUI.command --build --model "$MODEL" --disable_sip --disable_smb 2>&1 | tee "$RES/build.log"
+          test -f Build-Folder/OpenCore-Build/EFI/OC/config.plist
+
+      - name: Hash the built tree
+        run: |
+          (
+            cd Build-Folder/OpenCore-Build
+            find . -type f -print0 | LC_ALL=C sort -z | xargs -0 shasum -a 256
+          ) > "$RES/manifest-sha256.txt"
+          wc -l "$RES/manifest-sha256.txt"
+          (
+            cd Build-Folder/OpenCore-Build
+            find . -type f -print0 | LC_ALL=C sort -z | xargs -0 stat -f '%z %N'
+          ) > "$RES/tree-sizes.txt"
+
+      - name: Print config.plist fields
+        run: python3 ci_tooling/parity/print-config-fields.py Build-Folder/OpenCore-Build | tee "$RES/config-fields.txt"
+
+      - name: Validate with ocvalidate
+        run: |
+          chmod +x payloads/OpenCore/ocvalidate
+          payloads/OpenCore/ocvalidate Build-Folder/OpenCore-Build/EFI/OC/config.plist 2>&1 | tee "$RES/ocvalidate.txt"
+
+      - name: Copy the text files of the tree
+        run: |
+          (
+            cd Build-Folder/OpenCore-Build
+            find . -type f \( -name '*.plist' -o -name '.content*' -o -name '*.strings' -o -name '*.yml' \) -print0
+          ) | while IFS= read -r -d '' f; do
+            mkdir -p "$RES/plists/$(dirname "$f")"
+            cp "Build-Folder/OpenCore-Build/$f" "$RES/plists/$f"
+          done
+          find "$RES/plists" -type f | wc -l
+
+      - name: Publish results to an orphan branch
+        if: always()
+        run: |
+          if [ ! -d "$RES" ]; then
+            echo "::warning::no results directory; nothing to publish"
+            exit 0
+          fi
+          echo "job_status=${{ job.status }}" >> "$RES/env.txt"
+          BRANCH="${RES}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q --orphan "$BRANCH"
+          git rm -r -q --cached .
+          git add -f "$RES"
+          git commit -q -m "parity results: run ${GITHUB_RUN_NUMBER} ${MODEL} ${{ matrix.runner }} py${{ matrix.python }} (${{ job.status }})"
+          git push origin "HEAD:refs/heads/${BRANCH}"
+          echo "::notice title=parity results::branch ${BRANCH} status ${{ job.status }}"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: oclp-efi-${{ env.MODEL_SAFE }}-${{ matrix.runner }}-py${{ matrix.python }}
+          path: |
+            Build-Folder/OpenCore-Build
+            results
+          include-hidden-files: true
+          if-no-files-found: warn
