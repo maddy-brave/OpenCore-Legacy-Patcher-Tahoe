@@ -1,0 +1,59 @@
+###################################
+# OpenCore Legacy Patcher (3.0.0) #
+###################################
+Log file set:
+  /Users/runner/Library/Logs/Dortania/OpenCore-Patcher_3.0.0_2026-10-05_06-25-36-286074.log
+~/Library/Logs/Dortania/OpenCore-Patcher_3.0.0_2026-10-05_06-25-36-286074.log
+Current working directory: /Users/runner/work/OpenCore-Legacy-Patcher-Tahoe/OpenCore-Legacy-Patcher-Tahoe
+Detected arguments, switching to CLI mode
+Set OpenCore Build
+- Using custom model: MacBookPro11,3
+- Set Disable SIP configuration
+- Set Disable SecureBootModel configuration
+Building Configuration for external: MacBookPro11,3
+Creating build folder
+
+- Adding OpenCore v1.0.5 RELEASE
+- Adding config.plist for OpenCore
+- Adding Lilu.kext 1.7.1
+- Enabling macOS 26 FileVault 2 support
+- Enabling VMX Bit for non-macOS OSes
+- Adding ECM-Override.kext 1.0.0
+- Adding CatalinaIntelI210Ethernet.kext 1.0.0
+- Adding AirportBrcmFixup.kext 2.1.9
+- Adding IOSkywalkFamily.kext 1.2.0
+- Adding IO80211FamilyLegacy.kext 1.0.0
+- Adding AirPortBrcmNIC-Tahoe.kext 1.0.0
+- Adding KDKlessWorkaround.kext 1.0.0
+- Adding IOS3XeFamily.kext 1.0.0
+- Enabling Board ID exemption patch
+- Adding ipc_control_port_options=0 to boot-args
+- Adding AutoPkgInstaller.kext 1.0.4
+- Set SIP to allow Root Volume patching
+- Allowing FileVault on Root Patched systems
+- Enabling KC UUID mismatch patch
+- Adding RSRHelper.kext 1.0.2
+- Disabling AMFI
+- Adding CSLVFixup.kext 2.6.1
+- Disabling SecureBootModel
+- Enabling AMFIPass
+- Adding AMFIPass.kext 1.4.1
+- Disabling mediaanalysisd
+- Setting RestrictEvents block arguments: media
+- Adding RestrictEvents.kext 1.1.7
+- Setting RestrictEvents patch arguments: sbvmm
+- Adding AppleUSBTopCase.kext 1.0.0
+- Adding AppleUSBMultitouch.kext 1.0.0
+- Adding AppleCameraInterface.kext 1.0.0
+- Adding USB-Map.kext and USB-Map-Tahoe.kext
+- Adding OpenCanopy GUI
+- Adding bootmgfw.efi BlessOverride
+- Enabling Board ID exemption patch
+- Using Model ID: MacBookPro11,3
+- Using Board ID: Mac-2BD1B31983FE1663
+- Cleaning up files
+- Validating generated config
+
+Your OpenCore EFI for MacBookPro11,3 has been built at:
+    /Users/runner/work/OpenCore-Legacy-Patcher-Tahoe/OpenCore-Legacy-Patcher-Tahoe/Build-Folder/OpenCore-Build
+
