@@ -24,13 +24,25 @@ def load_manifest(path: Path) -> dict[str, str]:
     return out
 
 
+NAME_KEYS = ("BundlePath", "Path", "Comment")
+
+
+def _item_key(item, index: int) -> str:
+    """Key list entries by their name field so an inserted entry does not shift every later one."""
+    if isinstance(item, dict):
+        for name in NAME_KEYS:
+            if item.get(name):
+                return f"[{item[name]}]"
+    return f"[{index}]"
+
+
 def flatten(obj, prefix=()):
     if isinstance(obj, dict):
         for k, v in obj.items():
             yield from flatten(v, prefix + (str(k),))
     elif isinstance(obj, list):
         for i, v in enumerate(obj):
-            yield from flatten(v, prefix + (f"[{i}]",))
+            yield from flatten(v, prefix + (_item_key(v, i),))
     else:
         yield prefix, obj
 
