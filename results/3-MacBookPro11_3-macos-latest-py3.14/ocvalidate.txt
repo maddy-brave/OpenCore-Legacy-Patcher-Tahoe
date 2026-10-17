@@ -1,0 +1,8 @@
+
+NOTE: This version of ocvalidate is only compatible with OpenCore version 1.0.6!
+
+
+Misc->BlessOverride: \EFI\Microsoft\Boot\bootmgfw.efi is redundant!
+CheckMisc returns 1 error!
+
+Completed validating Build-Folder/OpenCore-Build/EFI/OC/config.plist in 3 ms. Found 1 issue requiring attention.
